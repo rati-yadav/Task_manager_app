@@ -8,14 +8,30 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const error = requestUrl.searchParams.get("error");
 
-  if (error) {
-    return NextResponse.redirect(new URL("/login", requestUrl.origin));
+  if (error || !code) {
+    return NextResponse.redirect(
+      new URL("/login?error=oauth_failed", requestUrl.origin)
+    );
   }
 
-  if (code) {
-    const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = cookies();
+
+  const supabase = createRouteHandlerClient({
+    cookies: () => cookieStore,
+  });
+
+  const { error: exchangeError } =
     await supabase.auth.exchangeCodeForSession(code);
+
+  if (exchangeError) {
+    console.error("❌ OAuth session exchange failed:", exchangeError);
+
+    return NextResponse.redirect(
+      new URL("/login?error=session_exchange_failed", requestUrl.origin)
+    );
   }
 
-  return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
+  return NextResponse.redirect(
+    new URL("/dashboard", requestUrl.origin)
+  );
 }

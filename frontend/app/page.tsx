@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Root "/" redirects to the dashboard.
-// Middleware handles auth — unauthenticated users get sent to /login.
+// Root route should not bypass auth.
+// Middleware handles the real redirect logic for signed-in and signed-out users.
 export default function RootPage() {
-  redirect("/dashboard");
+  redirect("/login");
 }
