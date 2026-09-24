@@ -10,41 +10,27 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setLoading(true);
     try {
-      /**
-       * supabase.auth.signInWithOAuth triggers the Google consent screen.
-       * Supabase handles the entire OAuth flow:
-       * 1. Redirects user to Google's auth page.
-       * 2. Google redirects back to our /auth/callback route with a code.
-       * 3. Supabase exchanges the code for a session and sets cookies.
-       *
-       * We use redirectTo so after login the user lands on /dashboard.
-       */
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
-            // Request offline access so Google returns a refresh token
             access_type: "offline",
-            // Force the account picker even if already signed in
-            prompt: "consent",
+            prompt: "select_account",
           },
         },
       });
-
       if (error) throw error;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
       toast.error(message);
       setLoading(false);
     }
-    // Don't setLoading(false) here — the page will navigate away on success
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-indigo-100">
       <div className="card w-full max-w-md text-center">
-        {/* Logo / Branding */}
         <div className="mb-8">
           <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,16 +39,14 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">TaskManager</h1>
-          <p className="text-gray-500 mt-1">Sign in to manage your team's tasks</p>
+          <p className="text-gray-500 mt-1">Sign in to manage your team&apos;s tasks</p>
         </div>
 
-        {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {/* Google "G" SVG logo */}
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -73,7 +57,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-xs text-gray-400 mt-6">
-          By signing in you agree to our Terms of Service and Privacy Policy.
+          By signing in you agree to our Terms of Service.
         </p>
       </div>
     </div>

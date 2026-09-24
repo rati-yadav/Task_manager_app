@@ -1,12 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Browser-side Supabase client.
- * Uses the anon key — all access is governed by RLS policies.
- * We use this only for Auth (Google OAuth login/logout/session).
- * All data fetching goes through the Flask backend which uses the service role key.
+ * Use createClientComponentClient from auth-helpers for client components.
+ * This handles PKCE flow correctly with cookie-based session storage
+ * that works across both client and server (middleware).
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClientComponentClient({
+  supabaseUrl,
+  supabaseKey: supabaseAnonKey,
+});
