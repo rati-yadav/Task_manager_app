@@ -5,8 +5,8 @@ A full-stack task management web application built with Next.js, Flask, Supabase
 ## Live URLs
 | Service | URL |
 |---------|-----|
-| Frontend | https://taskmanager-hairdrama.vercel.app *(replace after deploy)* |
-| Backend API | https://taskmanager-backend.onrender.com *(replace after deploy)* |
+| Frontend | https://task-manager-app-8snp.onrender.com |
+| Backend API | https://taskmanagerappraj.vercel.app  |
 
 ---
 
