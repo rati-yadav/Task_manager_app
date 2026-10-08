@@ -1,39 +1,50 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  console.log("🔥 MIDDLEWARE RUNNING:", req.nextUrl.pathname);
+  let res = NextResponse.next({
+    request: { headers: req.headers },
+  });
 
-  const res = NextResponse.next();
-
+  // Always allow auth callback
   if (req.nextUrl.pathname.startsWith("/auth/callback")) {
     return res;
   }
 
-  const supabase = createMiddlewareClient({ req, res });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          req.cookies.set({ name, value, ...options });
+          res = NextResponse.next({ request: { headers: req.headers } });
+          res.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          req.cookies.set({ name, value: "", ...options });
+          res = NextResponse.next({ request: { headers: req.headers } });
+          res.cookies.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  console.log("🔥 SESSION EXISTS:", !!session);
-
+  const { data: { session } } = await supabase.auth.getSession();
   const { pathname } = req.nextUrl;
 
-  if (pathname === "/") {
-    return session
-      ? NextResponse.redirect(new URL("/dashboard", req.url))
-      : NextResponse.redirect(new URL("/login", req.url));
-  }
-
+  // Protect dashboard and tasks
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/tasks")) {
     if (!session) {
-      console.log("🚨 NO SESSION → REDIRECTING TO LOGIN");
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
+  // Redirect logged-in users away from login
   if (pathname === "/login" && session) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
@@ -43,7 +54,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
     "/dashboard/:path*",
     "/tasks/:path*",
     "/login",

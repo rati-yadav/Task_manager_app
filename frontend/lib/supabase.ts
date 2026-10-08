@@ -1,15 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Use createClientComponentClient from auth-helpers for client components.
- * This handles PKCE flow correctly with cookie-based session storage
- * that works across both client and server (middleware).
+ * Browser-side Supabase client using @supabase/ssr
+ * This works correctly with Next.js App Router for both
+ * local development and production (Vercel).
  */
-export const supabase = createClientComponentClient({
-  supabaseUrl,
-  supabaseKey: supabaseAnonKey,
-});
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
